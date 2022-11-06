@@ -46,7 +46,7 @@ typedef struct {
 
 
 typedef struct Data{
-    Matrix matrix;
+    Matrix *matrix;
     char *data;
 }Data;
 
@@ -62,6 +62,77 @@ typedef struct Node {
 }Node;
 
 
+typedef struct R_Tree{
+    Node *root;
+};
+
+
+R_Tree *newTree();
+Node *newNode();
+Matrix *newMatrix(double x0,double y0);
+Data *newData(double x0,double y0,char *d);
+Data *newData(Matrix *s,char *d);
+
+void check(Node *root);
+int insert(R_Tree *root,int key,char *data);
+int _free_tree(Node *root);
+int deleteNode(R_Tree *root,int key);
+Node *get(R_Tree *root,int key);
+void showAll(Node *root);
+
+
+
+
+R_Tree *newTree(){
+    R_Tree *s=(R_Tree *) malloc(sizeof (R_Tree));
+    memset(s,0,sizeof (s));
+    memset(s->root,0,sizeof (s->root));
+    return s;
+}
+
+
+
+Node *newNode(){
+    Node *s=(Node *) malloc(sizeof (Node));
+    memset(s,0,sizeof (s));
+    memset(s->ptr,0,sizeof (s->ptr));
+    memset(s->dataList,0,sizeof (s->dataList));
+    memset(s->nodeList,0,sizeof (s->nodeList));
+    s->parent=NULL;
+    s->type=NODE;
+    return s;
+}
+
+
+Matrix *newMatrix(double x0,double y0){
+    Matrix *s=(Matrix *) malloc(sizeof (Matrix));
+    s->x=x0;
+    s->y=y0;
+    return s;
+}
+
+
+
+Data *newData(double x0,double y0,char *d){
+    Matrix *s=(Matrix *) malloc(sizeof (Matrix));
+    s->x=x0;
+    s->y=y0;
+    Data *data=(Data *) malloc(sizeof (Data));
+    data->matrix=s;
+    data->data=d;
+    return data;
+}
+
+
+
+Data *newData(Matrix *s,char *d){
+    Data *data=(Data *) malloc(sizeof (Data));
+    data->matrix=s;
+    data->data=d;
+    return data;
+}
+
+
 
 /**
  * 转化为弧度(rad)
@@ -73,6 +144,9 @@ double rad(double d)
 
 
 
+/**
+ * 计算两点间距离
+ */
 double getDistance(Matrix a,Matrix b){
     double radLat1 = rad(a.x);
     double radLat2 = rad(b.x);
