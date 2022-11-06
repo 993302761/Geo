@@ -34,8 +34,8 @@ R树一定要满足一下要求：
 #define PI 3.1415926
 
 typedef enum {
-    NODE=1,
-    DATANODE=2
+    NODE=1,             //普通节点
+    DATANODE=2          //数据节点
 }NodeType;
 
 
