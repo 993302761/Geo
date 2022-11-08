@@ -1,11 +1,14 @@
 #include <iostream>
+#include <cassert>
+
 using namespace std;
 
 #include "R_Tree.h"
 
 int main() {
-    Matrix a{38.86324,117.08319};
-    Matrix b{38.84896,117.11161};
-    cout<<getDistance(a,b);
+    R_Tree *s=newTree();
+    Data *data= newData(38.90259,117.01317,"123");
+    insert(s,data);
+    printf("%lf",s->root->dataList[0]->x);
     return 0;
 }
