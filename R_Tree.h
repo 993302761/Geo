@@ -75,13 +75,13 @@ double getDistance(Data a,Data b);
 int check_dataNode(Node *node);
 int insert(R_Tree *root,Data *data);
 int merge_data(Node *root, Data *data);
-int merge_node(Node *root, Node *next,double x0);
+int add_node(Node *root, Node *node);
 
 int _free_tree(Node *root);
 void delete_data(Node *node, Data *data, int s);
-void delete_node(Node *node, Node *next);
+void replace_node(Node *node, Node *n1, Node *n2);
 void delete_node(Node *node, double d);
-void showAll(Node *root);
+void showAll(R_Tree *root);
 
 
 
@@ -147,6 +147,41 @@ double getDistance(Data a,Data b){
 
 
 
+void show(Node *n){
+    if (n==NULL){
+        return;
+    }
+    int k=n->count;
+    printf("%d :",n->type);
+    for (int i = 0; i < k; ++i) {
+        printf("%lf  ",n->x[i]);
+    }
+    printf("\n");
+
+    for (int i = 0; i < M; ++i) {
+        if (n->nodeList[i]==NULL){
+            return;
+        }
+        show(n->nodeList[i]);
+    }
+}
+
+
+/**
+ * 遍历树
+ */
+void showAll(R_Tree *root){
+    if (root==NULL){
+        return;
+    }
+    show(root->root);
+}
+
+
+
+
+
+
 
 /**
  * 删除数据节点
@@ -172,24 +207,14 @@ void delete_data(Node *node, Data *data, int s){
 
 
 
-void delete_node(Node *node, Node *next){
+void replace_node(Node *node, Node *n1, Node *n2){
     int i;
     for ( i = 0; i < M+1; ++i) {
-        if (node->nodeList[i]==next){
-            for (int k = i; k < M; ++k) {
-                node->nodeList[k]=node->nodeList[k+1];
-            }
+        if (node->nodeList[i]==n1){
+            node->nodeList[i]=n2;
             break;
         }
     }
-    int j = i;
-    if (i>0){
-        j--;
-    }
-    for (   ; j < M-1; ++j) {
-        node->x[j]=node->x[j+1];
-    }
-
 }
 
 
@@ -208,14 +233,12 @@ void delete_node(Node *node, double d){
 
 
 int check_dataNode(Node *node){
-    assert(node->type==DATANODE);
 
     if (node->count==M){
         //开始执行分裂操作
         Node *right=newNode();
         Node *left=newNode();
         left->type=right->type=DATANODE;
-
         int j=node->count;
         for (int i = j-1; i >= 0; --i) {
             if (i<M/2){
@@ -223,30 +246,38 @@ int check_dataNode(Node *node){
             } else{
                 merge_data(right, node->dataList[i]);
             }
-            delete_data(node, node->dataList[i], 0);
+            node->dataList[i]=NULL;
+            node->x[i]=0;
+            node->count--;
         }
 
 
         if (node->parent!=NULL){
-            delete_node(node->parent,node);
-            merge_node(node->parent,left,left->dataList[0]->x);
-            merge_node(node->parent,right,right->dataList[M/2]->x);
+            Node *parent=node->parent;
+            replace_node(parent, node ,left);
+            add_node(parent, right);
+            free(node);
         } else{
+            left->parent=right->parent=node;
             node->type=NODE;
             node->nodeList[0]=left;
             node->nodeList[1]=right;
+            node->x[0]=right->x[0];
+            node->count++;
         }
 
     }
 }
 
-int merge_node(Node *root, Node *node){
+int add_node(Node *root, Node *node){
     assert(root->type == NODE);
     assert(root->nodeList[M] == NULL);
 
+    double x=node->x[0];
+
     int i=(root->count)++;
     for (int j = i-1; j >= 0; --j) {
-        if (root->x[j]>node->x[0]){
+        if (root->x[j]>x){
             root->x[j+1]=root->x[j];
             root->nodeList[j+2]=root->nodeList[j+1];
             i=j;
@@ -283,7 +314,7 @@ int merge_data(Node *root, Data *data){
             break;
         }
     }
-    root->x[root->count]=root->x[i];
+    root->x[root->count-1]=root->x[i];
     root->x[i]=data->x;
 
     return check_dataNode(root);
@@ -319,7 +350,7 @@ int insert(R_Tree *head,Data *data){
         int i;
         assert(k<=2);
         for ( i = 0; i < k; ++i) {
-            if (root->x[i]<data->x){
+            if (root->x[i]>data->x){
                 root=root->nodeList[i];
                 break;
             }
