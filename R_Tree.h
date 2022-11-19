@@ -50,9 +50,10 @@ typedef struct Node {
     int count;
     NodeType type;
     double x[M];
-    struct Node *parent;
-    struct Node *nodeList[M+1];
+    Node *parent;
+    Node *nodeList[M+1];
     Data *dataList[M];
+    Data **next;
 }Node;
 
 
@@ -73,6 +74,8 @@ double getDistance(Data a,Data b);
 
 
 int check_dataNode(Node *node);
+int check_Node(Node *node);
+
 int insert(R_Tree *root,Data *data);
 int merge_data(Node *root, Data *data);
 int add_node(Node *root, Node *node);
@@ -158,7 +161,7 @@ void show(Node *n){
     }
     printf("\n");
 
-    for (int i = 0; i < M; ++i) {
+    for (int i = 0; i < M+1; ++i) {
         if (n->nodeList[i]==NULL){
             return;
         }
@@ -231,15 +234,65 @@ void delete_node(Node *node, double d){
 }
 
 
+int check_Node(Node *node){
+    int j=node->count;
+    if (j==M){
+        //开始执行分裂操作
+        Node *right=newNode();
+        Node *left=newNode();
+        left->type=right->type=node->type;
+
+        for (int i = 0 , k=0,s=0; i < M+1; ++i) {
+            if (i<M/2){
+                left->nodeList[k]=node->nodeList[i];
+                node->nodeList[i]=NULL;
+                left->nodeList[k]->parent=left;
+                k++;
+            } else{
+                right->nodeList[s]=node->nodeList[i];
+                node->nodeList[i]=NULL;
+                right->nodeList[s]->parent=right;
+                s++;
+            }
+        }
+
+        for (int i = 0 , k=0,s=0; i < j; ++i) {
+            if (i<M/2-1){
+                left->x[k++]=node->x[i];
+                left->count++;
+            } else if (i>M/2-1){
+                right->x[s++]=node->x[i];
+                right->count++;
+            }
+        }
+        Node *parent=node->parent;
+        if (parent==NULL){
+            left->parent=right->parent=node;
+            node->x[0]=node->x[M/2-1];
+            for (int i = 1; i < M; ++i) {
+                node->x[i]=0;
+            }
+            node->count=1;
+            node->nodeList[0]=left;
+            node->nodeList[1]=right;
+
+        } else{
+            left->parent=right->parent=parent;
+            replace_node(parent,node,left);
+            add_node(parent,right);
+            free(node);
+            check_Node(parent);
+        }
+    }
+}
 
 int check_dataNode(Node *node){
-
-    if (node->count==M){
+    int j=node->count;
+    if (j==M){
         //开始执行分裂操作
         Node *right=newNode();
         Node *left=newNode();
         left->type=right->type=DATANODE;
-        int j=node->count;
         for (int i = j-1; i >= 0; --i) {
             if (i<M/2){
                 merge_data(left, node->dataList[i]);
@@ -251,12 +304,14 @@ int check_dataNode(Node *node){
             node->count--;
         }
 
-
         if (node->parent!=NULL){
             Node *parent=node->parent;
+            left->parent=right->parent=parent;
+            left->next=right->dataList;
             replace_node(parent, node ,left);
             add_node(parent, right);
             free(node);
+            check_Node(parent);
         } else{
             left->parent=right->parent=node;
             node->type=NODE;
@@ -269,8 +324,12 @@ int check_dataNode(Node *node){
     }
 }
 
+
+
+
+
 int add_node(Node *root, Node *node){
-    assert(root->type == NODE);
+    assert(root->type != DATANODE);
     assert(root->nodeList[M] == NULL);
 
     double x=node->x[0];
@@ -348,7 +407,7 @@ int insert(R_Tree *head,Data *data){
     while (root->type!=DATANODE){
         int k=root->count;
         int i;
-        assert(k<=2);
+        assert(k<= M/2+1);
         for ( i = 0; i < k; ++i) {
             if (root->x[i]>data->x){
                 root=root->nodeList[i];
