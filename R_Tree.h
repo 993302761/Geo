@@ -53,10 +53,13 @@ typedef struct Node {
     Node *parent;
     Node *nodeList[M+1];
     Data *dataList[M];
-    Data **next;
 }Node;
 
 
+typedef struct DataList{
+    Data *data;
+    DataList *next;
+}DataList;
 
 
 typedef struct R_Tree{
@@ -67,7 +70,7 @@ typedef struct R_Tree{
 R_Tree *newTree();
 Node *newNode();
 Data *newData(double x0,double y0,char *d);
-
+DataList *newDataList();
 
 double rad(double d);
 double getDistance(Data a,Data b);
@@ -80,12 +83,12 @@ int insert(R_Tree *root,Data *data);
 int merge_data(Node *root, Data *data);
 int add_node(Node *root, Node *node);
 
-int _free_tree(Node *root);
+int _free(R_Tree *root);
 void delete_data(Node *node, Data *data, int s);
 void replace_node(Node *node, Node *n1, Node *n2);
 void delete_node(Node *node, double d);
 void showAll(R_Tree *root);
-
+DataList *geoRadius(R_Tree *root,double x,double y,int radius);
 
 
 
@@ -121,6 +124,12 @@ Data *newData(double x0,double y0,char *d){
 }
 
 
+DataList *newDataListNode(Data *d){
+    DataList *s=(DataList *) malloc(sizeof (DataList));
+    s->data=d;
+    s->next=NULL;
+    return s;
+}
 
 
 /**
@@ -149,6 +158,18 @@ double getDistance(Data a,Data b){
 }
 
 
+/**
+ * 获取坐标半径内的所有标记点
+ * @param radius 半径
+ * @return 标记点集合
+ */
+DataList *geoRadius(R_Tree *root,double x,double y,int radius){
+    if (root==NULL||root->root==NULL){
+        return NULL;
+    }
+    Node *node=root->root;
+
+}
 
 void show(Node *n){
     if (n==NULL){
@@ -210,6 +231,7 @@ void delete_data(Node *node, Data *data, int s){
 
 
 
+
 void replace_node(Node *node, Node *n1, Node *n2){
     int i;
     for ( i = 0; i < M+1; ++i) {
@@ -219,6 +241,8 @@ void replace_node(Node *node, Node *n1, Node *n2){
         }
     }
 }
+
+
 
 
 void delete_node(Node *node, double d){
@@ -232,6 +256,8 @@ void delete_node(Node *node, double d){
         }
     }
 }
+
+
 
 
 int check_Node(Node *node){
@@ -286,6 +312,9 @@ int check_Node(Node *node){
     }
 }
 
+
+
+
 int check_dataNode(Node *node){
     int j=node->count;
     if (j==M){
@@ -307,7 +336,6 @@ int check_dataNode(Node *node){
         if (node->parent!=NULL){
             Node *parent=node->parent;
             left->parent=right->parent=parent;
-            left->next=right->dataList;
             replace_node(parent, node ,left);
             add_node(parent, right);
             free(node);
@@ -393,7 +421,6 @@ int insert(R_Tree *head,Data *data){
         return 0;
     }
 
-
     //判断树是否为空树
     if (head->root==NULL){
         root=newNode();
@@ -422,6 +449,41 @@ int insert(R_Tree *head,Data *data){
     //加入叶子节点中
     return merge_data(root, data);
 }
+
+
+
+
+int _free0(Node *node){
+    if (node==NULL){
+        return 0;
+    }
+    int s=node->count;
+    if (node->type==NODE){
+        for (int i = 0; i < s+1; ++i) {
+            _free0(node->nodeList[i]);
+        }
+    } else{
+        for (int i = 0; i < s; ++i) {
+            free(node->dataList[i]);
+        }
+    }
+    free(node);
+    return 1;
+}
+
+
+
+
+/**
+ * 释放树
+ */
+int _free(R_Tree *root){
+    if (root==NULL){
+        return 0;
+    }
+    return _free0(root->root);
+}
+
 
 
 #endif //R_TREE_R_TREE_H
