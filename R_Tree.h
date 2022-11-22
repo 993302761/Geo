@@ -49,7 +49,8 @@ typedef struct Data{
 typedef struct Node {
     int count;
     NodeType type;
-    double x[M];
+    double x[2];
+    double y[2];
     Node *parent;
     Node *nodeList[M+1];
     Data *dataList[M];
@@ -116,6 +117,10 @@ Node *newNode() {
 
 
 Data *newData(double x0,double y0,char *d){
+    if (x0<0||x0>90||y0<0||y0>180){
+        printf("经纬度数据错误");
+        return NULL;
+    }
     Data *data=(Data *) malloc(sizeof (Data));
     data->data=d;
     data->x=x0;
@@ -144,7 +149,7 @@ double rad(double d)
 
 
 /**
- * 计算两点间距离
+ * 计算两坐标点间距离
  */
 double getDistance(Data a,Data b){
     double radLat1 = rad(a.x);
@@ -156,6 +161,25 @@ double getDistance(Data a,Data b){
     s = round(s * 10000) / 10000;
     return s;
 }
+
+
+/**
+ * 计算两纬度间距离
+ * (纬度差0.008990=1000.762200米)
+ */
+double xSpace(double x0,double x1){
+    return fabs(x0-x1)/0.008990*1000.762200;
+}
+
+
+/**
+ * 计算两点经度间距离
+ * (经度差0.011570=1000.684500米)
+ */
+double ySpace(double y0,double y1){
+    return fabs(y0-y1)/0.011570*1000.684500;
+}
+
 
 
 /**
@@ -391,18 +415,29 @@ int merge_data(Node *root, Data *data){
     //以x轴为排序标准
     int i=(root->count)++;
     root->dataList[i]=data;
-    for (int j = i-1; j >= 0; --j) {
-        if ((root->dataList[j]->x) > (root->dataList[i]->x)){
-            Data *p=root->dataList[j];
-            root->dataList[j]=root->dataList[i];
-            root->dataList[i]=p;
-            i=j;
-        } else{
-            break;
-        }
+
+//    for (int j = i-1; j >= 0; --j) {
+//        if ((root->dataList[j]->x) > (root->dataList[i]->x)){
+//            Data *p=root->dataList[j];
+//            root->dataList[j]=root->dataList[i];
+//            root->dataList[i]=p;
+//            i=j;
+//        } else{
+//            break;
+//        }
+//    }
+
+    if (root->x[0]>data->x){
+        root->x[0]=data->x;
+    } else if (root->x[1]<data->x){
+        root->x[1]=data->x;
     }
-    root->x[root->count-1]=root->x[i];
-    root->x[i]=data->x;
+
+    if (root->y[0]>data->y){
+        root->y[0]=data->y;
+    } else if (root->y[1]<data->y){
+        root->y[1]=data->y;
+    }
 
     return check_dataNode(root);
 }
@@ -432,16 +467,14 @@ int insert(R_Tree *head,Data *data){
 
     //找到x轴临近的叶子节点
     while (root->type!=DATANODE){
-        int k=root->count;
         int i;
-        assert(k<= M/2+1);
-        for ( i = 0; i < k; ++i) {
+        for ( i = 0; i < 2; ++i) {
             if (root->x[i]>data->x){
                 root=root->nodeList[i];
                 break;
             }
         }
-        if (i==k){
+        if (i==2){
             root=root->nodeList[i];
         }
     }
