@@ -163,7 +163,9 @@ double getDistance(Data a,Data b){
 }
 
 
+
 /**
+ *
  * 计算两纬度间距离
  * (纬度差0.008990=1000.762200米)
  */
@@ -199,19 +201,27 @@ void show(Node *n){
     if (n==NULL){
         return;
     }
-    int k=n->count;
-    printf("%d :",n->type);
-    for (int i = 0; i < k; ++i) {
-        printf("%lf  ",n->x[i]);
-    }
-    printf("\n");
-
-    for (int i = 0; i < M+1; ++i) {
-        if (n->nodeList[i]==NULL){
-            return;
+    if (n->type==NODE){
+        printf("Node :{ ");
+        printf("x:%lf - %lf \t",n->x[0],n->x[1]);
+        printf("y:%lf - %lf }\n",n->y[0],n->y[1]);
+        for (int i = 0; i < M+1; ++i) {
+            if (n->nodeList[i]==NULL){
+                return;
+            }
+            show(n->nodeList[i]);
         }
-        show(n->nodeList[i]);
+    } else{
+        int k=n->count;
+        printf("DataNode: ");
+        for (int i = 0; i < k; ++i) {
+            printf("{ x:%lf  y:%lf } ",n->dataList[i]->x,n->dataList[i]->y);
+        }
+        printf("\n");
     }
+
+
+
 }
 
 
@@ -353,7 +363,6 @@ int check_dataNode(Node *node){
                 merge_data(right, node->dataList[i]);
             }
             node->dataList[i]=NULL;
-            node->x[i]=0;
             node->count--;
         }
 
@@ -369,7 +378,6 @@ int check_dataNode(Node *node){
             node->type=NODE;
             node->nodeList[0]=left;
             node->nodeList[1]=right;
-            node->x[0]=right->x[0];
             node->count++;
         }
 
@@ -416,28 +424,34 @@ int merge_data(Node *root, Data *data){
     int i=(root->count)++;
     root->dataList[i]=data;
 
-//    for (int j = i-1; j >= 0; --j) {
-//        if ((root->dataList[j]->x) > (root->dataList[i]->x)){
-//            Data *p=root->dataList[j];
-//            root->dataList[j]=root->dataList[i];
-//            root->dataList[i]=p;
-//            i=j;
-//        } else{
-//            break;
-//        }
-//    }
-
-    if (root->x[0]>data->x){
-        root->x[0]=data->x;
-    } else if (root->x[1]<data->x){
-        root->x[1]=data->x;
+    for (int j = i-1; j >= 0; --j) {
+        if ((root->dataList[j]->x) > (root->dataList[i]->x)){
+            Data *p=root->dataList[j];
+            root->dataList[j]=root->dataList[i];
+            root->dataList[i]=p;
+            i=j;
+        } else{
+            break;
+        }
     }
 
-    if (root->y[0]>data->y){
-        root->y[0]=data->y;
-    } else if (root->y[1]<data->y){
-        root->y[1]=data->y;
+    if (i==0){
+        root->x[0]= root->x[1]=data->x;
+        root->y[0]= root->y[1]=data->y;
+    } else{
+        if (root->x[0]>data->x){
+            root->x[0]=data->x;
+        } else if (root->x[1]<data->x){
+            root->x[1]=data->x;
+        }
+
+        if (root->y[0]>data->y){
+            root->y[0]=data->y;
+        } else if (root->y[1]<data->y){
+            root->y[1]=data->y;
+        }
     }
+
 
     return check_dataNode(root);
 }
