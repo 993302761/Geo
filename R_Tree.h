@@ -90,8 +90,8 @@ void replace_node(Node *node, Node *n1, Node *n2);
 void delete_node(Node *node, double d);
 void showAll(R_Tree *root);
 DataList *geoRadius(R_Tree *root,double x,double y,int radius);
-
-
+void update_coordinate(Node *root,Data *data);
+void update_coordinate(Node *root,Node *data);
 
 R_Tree *newTree(){
     R_Tree *s=(R_Tree *) malloc(sizeof (R_Tree));
@@ -317,35 +317,30 @@ int check_Node(Node *node){
 
         for (int i = 0 , k=0,s=0; i < M; ++i) {
             if (i<M/2){
-                left->nodeList[k]=node->nodeList[i];
+                add_node(left,node->nodeList[i]);
                 node->nodeList[i]=NULL;
-                left->nodeList[k]->parent=left;
                 k++;
             } else{
-                right->nodeList[s]=node->nodeList[i];
+                add_node(right,node->nodeList[i]);
                 node->nodeList[i]=NULL;
-                right->nodeList[s]->parent=right;
                 s++;
             }
         }
 
-        for (int i = 0 , k=0,s=0; i < j; ++i) {
-            if (i<M/2-1){
-                left->x[k++]=node->x[i];
-                left->count++;
-            } else if (i>M/2-1){
-                right->x[s++]=node->x[i];
-                right->count++;
-            }
-        }
+//        for (int i = 0 , k=0,s=0; i < j; ++i) {
+//            if (i<M/2-1){
+//                left->x[k++]=node->x[i];
+//                left->count++;
+//            } else if (i>M/2-1){
+//                right->x[s++]=node->x[i];
+//                right->count++;
+//            }
+//        }
+
         Node *parent=node->parent;
         if (parent==NULL){
             left->parent=right->parent=node;
-            node->x[0]=node->x[M/2-1];
-            for (int i = 1; i < M; ++i) {
-                node->x[i]=0;
-            }
-            node->count=1;
+            node->count=2;
             node->nodeList[0]=left;
             node->nodeList[1]=right;
 
@@ -404,25 +399,18 @@ int add_node(Node *root, Node *node){
     assert(root->type != DATANODE);
     assert(root->nodeList[M] == NULL);
 
-    double x=node->x[0];
+    int n=root->count;
+    root->nodeList[n]=node;
+    root->count++;
+    node->parent=root;
+    if (n==0){
+        root->x[0]=node->x[0];
+        root->x[1]=node->x[1];
+        root->y[0]=node->y[0];
+        root->y[1]=node->y[1];
+    }
+    update_coordinate(root,node);
 
-    int i=(root->count)++;
-    for (int j = i-1; j >= 0; --j) {
-        if (root->x[j]>x){
-            root->x[j+1]=root->x[j];
-            root->nodeList[j+2]=root->nodeList[j+1];
-            i=j;
-        } else{
-            break;
-        }
-    }
-    root->x[i]=node->x[0];
-    if (root->nodeList[i]->x[0]>node->x[0]){
-        root->nodeList[i+1]=root->nodeList[i];
-        root->nodeList[i]=node;
-    } else{
-        root->nodeList[i+1]=node;
-    }
 }
 
 void update_coordinate(Node *root,Data *data){
@@ -440,6 +428,20 @@ void update_coordinate(Node *root,Data *data){
 }
 
 
+void update_coordinate(Node *root,Node *data){
+    if (root->x[0]>data->x[0]){
+        root->x[0]=data->x[0];
+    } else if (root->x[1]<data->x[1]){
+        root->x[1]=data->x[1];
+    }
+
+    if (root->y[0]>data->y[0]){
+        root->y[0]=data->y[0];
+    } else if (root->y[1]<data->y[1]){
+        root->y[1]=data->y[1];
+    }
+}
+
 int merge_data(Node *root, Data *data){
     assert(root->type == DATANODE);
     assert(root->dataList[M - 1] == NULL);
@@ -447,6 +449,10 @@ int merge_data(Node *root, Data *data){
     //以x轴为排序标准
     int i=(root->count)++;
     root->dataList[i]=data;
+    if (i==0){
+        root->x[0]= root->x[1]=data->x;
+        root->y[0]= root->y[1]=data->y;
+    }
 
     for (int j = i-1; j >= 0; --j) {
         if ((root->dataList[j]->x) > (root->dataList[i]->x)){
@@ -459,17 +465,15 @@ int merge_data(Node *root, Data *data){
         }
     }
 
-    if (i==0){
-        root->x[0]= root->x[1]=data->x;
-        root->y[0]= root->y[1]=data->y;
-    }
 
 
-    check_dataNode(root);
+    Node *r=root;
     while (root!=NULL){
         update_coordinate(root,data);
         root=root->parent;
     }
+    check_dataNode(r);
+
 }
 
 
