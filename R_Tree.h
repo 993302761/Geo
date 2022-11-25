@@ -92,11 +92,14 @@ void showAll(R_Tree *root);
 DataList *geoRadius(R_Tree *root,double x,double y,int radius);
 void update_coordinate(Node *root,Data *data);
 void update_coordinate(Node *root,Node *data);
+int check_place(Node *node,double x,double y);
+
+
 
 R_Tree *newTree(){
     R_Tree *s=(R_Tree *) malloc(sizeof (R_Tree));
     memset(s,0,sizeof (s));
-    s->root=NULL;
+    s->root=nullptr;
     return s;
 }
 
@@ -107,7 +110,7 @@ Node *newNode() {
     memset(s, 0, sizeof(s));
     memset(s->dataList, 0, sizeof(s->dataList));
     memset(s->nodeList, 0, sizeof(s->nodeList));
-    s->parent = NULL;
+    s->parent = nullptr;
     s->type = NODE;
     return s;
 }
@@ -119,7 +122,7 @@ Node *newNode() {
 Data *newData(double x0,double y0,char *d){
     if (x0<0||x0>90||y0<0||y0>180){
         printf("经纬度数据错误");
-        return NULL;
+        return nullptr;
     }
     Data *data=(Data *) malloc(sizeof (Data));
     data->data=d;
@@ -129,11 +132,18 @@ Data *newData(double x0,double y0,char *d){
 }
 
 
+
 DataList *newDataListNode(Data *d){
     DataList *s=(DataList *) malloc(sizeof (DataList));
     s->data=d;
-    s->next=NULL;
+    s->next=nullptr;
     return s;
+}
+
+
+
+DataList *newDataList(){
+    return (DataList *) malloc(sizeof (DataList));
 }
 
 
@@ -151,11 +161,11 @@ double rad(double d)
 /**
  * 计算两坐标点间距离
  */
-double getDistance(Data a,Data b){
-    double radLat1 = rad(a.x);
-    double radLat2 = rad(b.x);
+double getDistance(Data *a,Data *b){
+    double radLat1 = rad(a->x);
+    double radLat2 = rad(b->x);
     double x = radLat1 - radLat2;
-    double y = rad(a.y) - rad(b.y);
+    double y = rad(a->y) - rad(b->y);
     double s = 2 * asin(sqrt(pow(sin( x / 2), 2) + cos(radLat1) * cos(radLat2) * pow(sin(y / 2), 2)));
     s = s * EARTH_RADIUS;
     s = round(s * 10000) / 10000;
@@ -163,7 +173,9 @@ double getDistance(Data a,Data b){
 }
 
 
-
+/**
+ * 计算两坐标点间距离
+ */
 double getDistance(double x0,double y0,double x1,double y1){
     double radLat1 = rad(x0);
     double radLat2 = rad(x1);
@@ -187,6 +199,7 @@ double xSpace(double x0,double x1){
 }
 
 
+
 /**
  * 计算两点经度间距离
  * (经度差0.011570=1000.684500米)
@@ -196,6 +209,47 @@ double ySpace(double y0,double y1){
 }
 
 
+/**
+ * 添加链表节点
+ */
+void add(DataList *root,DataList *node){
+    if (root== nullptr){
+        root=node;
+    }
+    while (true){
+        if (root->next== nullptr){
+            root->next=node;
+            break;
+        } else{
+            root=root->next;
+        }
+    }
+}
+
+/**
+ * 生成返回链表
+ */
+void geo(DataList *dataList,Node *node,double x,double y,int radius){
+    if (node->type==NODE){
+        if (xSpace(node->x[0],x)<1000|| xSpace(node->x[1],x)<1000){
+            if (ySpace(node->y[0],y)<1000|| ySpace(node->y[1],y)<1000){
+                int k=node->count;
+                for (int i = 0; i < k; ++i) {
+
+                }
+            }
+        }
+    } else{
+        int k=node->count;
+        for (int i = 0; i < k; ++i) {
+            if (getDistance(node->dataList[i], newData(x,y, nullptr))){
+
+            }
+        }
+    }
+
+}
+
 
 /**
  * 获取坐标半径内的所有标记点
@@ -203,15 +257,20 @@ double ySpace(double y0,double y1){
  * @return 标记点集合
  */
 DataList *geoRadius(R_Tree *root,double x,double y,int radius){
-    if (root==NULL||root->root==NULL){
-        return NULL;
+    if (root==nullptr||root->root==nullptr){
+        return nullptr;
     }
     Node *node=root->root;
+    DataList *dataList=newDataList();
 
 }
 
+
+/**
+ * 遍历树
+ */
 void show(Node *n){
-    if (n==NULL){
+    if (n==nullptr){
         return;
     }
     if (n->type==NODE){
@@ -219,7 +278,7 @@ void show(Node *n){
         printf("x:%lf - %lf \t",n->x[0],n->x[1]);
         printf("y:%lf - %lf }\n",n->y[0],n->y[1]);
         for (int i = 0; i < M; ++i) {
-            if (n->nodeList[i]==NULL){
+            if (n->nodeList[i]==nullptr){
                 return;
             }
             show(n->nodeList[i]);
@@ -232,17 +291,14 @@ void show(Node *n){
         }
         printf("\n");
     }
-
-
-
 }
 
 
 /**
- * 遍历树
+ * 展示树的所有节点
  */
 void showAll(R_Tree *root){
-    if (root==NULL){
+    if (root==nullptr){
         return;
     }
     show(root->root);
@@ -278,7 +334,12 @@ void delete_data(Node *node, Data *data, int s){
 
 
 
-
+/**
+ * 替换节点（将节点n1替换为n2）
+ * @param node
+ * @param n1
+ * @param n2
+ */
 void replace_node(Node *node, Node *n1, Node *n2){
     int i;
     for ( i = 0; i < M; ++i) {
@@ -306,7 +367,11 @@ void delete_node(Node *node, double d){
 
 
 
-
+/**
+ * 检查普通节点是否超出阈值
+ * @param node
+ * @return
+ */
 int check_Node(Node *node){
     int j=node->count;
     if (j==M){
@@ -318,27 +383,17 @@ int check_Node(Node *node){
         for (int i = 0 , k=0,s=0; i < M; ++i) {
             if (i<M/2){
                 add_node(left,node->nodeList[i]);
-                node->nodeList[i]=NULL;
+                node->nodeList[i]=nullptr;
                 k++;
             } else{
                 add_node(right,node->nodeList[i]);
-                node->nodeList[i]=NULL;
+                node->nodeList[i]=nullptr;
                 s++;
             }
         }
 
-//        for (int i = 0 , k=0,s=0; i < j; ++i) {
-//            if (i<M/2-1){
-//                left->x[k++]=node->x[i];
-//                left->count++;
-//            } else if (i>M/2-1){
-//                right->x[s++]=node->x[i];
-//                right->count++;
-//            }
-//        }
-
         Node *parent=node->parent;
-        if (parent==NULL){
+        if (parent==nullptr){
             left->parent=right->parent=node;
             node->count=2;
             node->nodeList[0]=left;
@@ -351,12 +406,18 @@ int check_Node(Node *node){
             free(node);
             check_Node(parent);
         }
+        return 1;
     }
+    return 0;
 }
 
 
 
-
+/**
+ * 检查数据节点是否超出阈值
+ * @param node
+ * @return
+ */
 int check_dataNode(Node *node){
     int j=node->count;
     if (j==M){
@@ -370,10 +431,10 @@ int check_dataNode(Node *node){
             } else{
                 merge_data(right, node->dataList[i]);
             }
-            node->dataList[i]=NULL;
+            node->dataList[i]=nullptr;
         }
 
-        if (node->parent!=NULL){
+        if (node->parent!=nullptr){
             Node *parent=node->parent;
             left->parent=right->parent=parent;
             replace_node(parent, node ,left);
@@ -387,17 +448,23 @@ int check_dataNode(Node *node){
             node->nodeList[1]=right;
             node->count=2;
         }
-
+        return 1;
     }
+    return 0;
 }
 
 
 
 
-
+/**
+ * 添加节点
+ * @param root
+ * @param node
+ * @return
+ */
 int add_node(Node *root, Node *node){
     assert(root->type != DATANODE);
-    assert(root->nodeList[M] == NULL);
+    assert(root->nodeList[M] == nullptr);
 
     int n=root->count;
     root->nodeList[n]=node;
@@ -413,6 +480,12 @@ int add_node(Node *root, Node *node){
 
 }
 
+
+/**
+ * 向上更新x和y的上下限
+ * @param root
+ * @param data
+ */
 void update_coordinate(Node *root,Data *data){
     if (root->x[0]>data->x){
         root->x[0]=data->x;
@@ -427,7 +500,11 @@ void update_coordinate(Node *root,Data *data){
     }
 }
 
-
+/**
+ * 向上更新x和y的上下限
+ * @param root
+ * @param data
+ */
 void update_coordinate(Node *root,Node *data){
     if (root->x[0]>data->x[0]){
         root->x[0]=data->x[0];
@@ -442,9 +519,16 @@ void update_coordinate(Node *root,Node *data){
     }
 }
 
+
+/**
+ * 添加数据节点
+ * @param root
+ * @param data
+ * @return
+ */
 int merge_data(Node *root, Data *data){
     assert(root->type == DATANODE);
-    assert(root->dataList[M - 1] == NULL);
+    assert(root->dataList[M - 1] == nullptr);
 
     //以x轴为排序标准
     int i=(root->count)++;
@@ -465,16 +549,17 @@ int merge_data(Node *root, Data *data){
         }
     }
 
-
-
     Node *r=root;
-    while (root!=NULL){
+    while (root!=nullptr){
         update_coordinate(root,data);
         root=root->parent;
     }
-    check_dataNode(r);
+    return check_dataNode(r);
 
 }
+
+
+
 
 
 /**
@@ -483,9 +568,7 @@ int merge_data(Node *root, Data *data){
  * @param data
  * @return 0-->未超过  1--> x或y过大  -1--> x或y过小
  */
-int check_place(Node *node,Data *data){
-    int x=data->x;
-    int y=data->y;
+int check_place(Node *node,double x,double y){
     if (x<node->x[0]){
         return -1;
     } else if (x>node->x[1]){
@@ -532,12 +615,12 @@ int insert(R_Tree *head,Data *data){
     Node *root;
 
     //树未初始化
-    if (head==NULL){
+    if (head== nullptr){
         return 0;
     }
 
     //判断树是否为空树
-    if (head->root==NULL){
+    if (head->root==nullptr){
         root=newNode();
         root->type=DATANODE;
         head->root=root;
@@ -548,7 +631,7 @@ int insert(R_Tree *head,Data *data){
     //找到x轴临近的叶子节点
     while (root->type!=DATANODE){
         int k=root->count;
-        int n=check_place(root,data);
+        int n=check_place(root,data->x,data->y);
         if (n<0){
             root=root->nodeList[0];
         } else if (n>0){
@@ -565,9 +648,13 @@ int insert(R_Tree *head,Data *data){
 
 
 
-
+/**
+ * 遍历每个节点并释放
+ * @param node
+ * @return
+ */
 int _free0(Node *node){
-    if (node==NULL){
+    if (node==nullptr){
         return 0;
     }
     int s=node->count;
@@ -591,7 +678,7 @@ int _free0(Node *node){
  * 释放树
  */
 int _free(R_Tree *root){
-    if (root==NULL){
+    if (root==nullptr){
         return 0;
     }
     return _free0(root->root);
