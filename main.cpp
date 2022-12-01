@@ -7,14 +7,28 @@ using namespace std;
 
 int main() {
     R_Tree *s=newTree();
-    Data *d=newData(8,117.01317,"123");
-    for (int i = 1; i <=20; ++i) {
-        insert(s,newData(i,117.01317,"123"));
-    }
-//    insert(s,d);
+    insert(s,newData(39.14413,117.21738,"天津站"));
+    insert(s,newData(39.14415,117.22033,"裕阳花园"));
+    insert(s,newData(39.14547,117.21867,"城市之光"));
+    insert(s,newData(39.14618,117.21387,"月光园"));
+    insert(s,newData(39.14041,117.21925,"汇和家园"));
+    insert(s,newData(39.14073,117.21287,"龙门大厦"));
+    insert(s,newData(39.14288,117.21037,"天津行车公寓"));
+
+
 
     showAll(s);
-    geoRadius(s,2,117.01317,1000);
+    printf("\n");
+
+    DataList *dataList=newDataList();
+
+    Data *d=newData(39.14050,117.20529, nullptr);
+    geoRadius(dataList,s,d->x,d->y,1000);
+    dataList=dataList->next;
+    while (dataList!= nullptr){
+        printf("x:%lf\t  y:%lf\t  地点:%s\t\t距离:%lf\n",dataList->data->x,dataList->data->y,dataList->data->data, getDistance(dataList->data,d));
+        dataList=dataList->next;
+    }
     _free(s);
     return 0;
 }

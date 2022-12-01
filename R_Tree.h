@@ -71,7 +71,9 @@ typedef struct R_Tree{
 R_Tree *newTree();
 Node *newNode();
 Data *newData(double x0,double y0,char *d);
+DataList *newDataList(Data *data);
 DataList *newDataList();
+
 
 double rad(double d);
 double getDistance(Data a,Data b);
@@ -89,7 +91,7 @@ void delete_data(Node *node, Data *data, int s);
 void replace_node(Node *node, Node *n1, Node *n2);
 void delete_node(Node *node, double d);
 void showAll(R_Tree *root);
-DataList *geoRadius(R_Tree *root,double x,double y,int radius);
+DataList *geoRadius(DataList *dataList,R_Tree *root,double x,double y,double radius);
 void update_coordinate(Node *root,Data *data);
 void update_coordinate(Node *root,Node *data);
 int check_place(Node *node,double x,double y);
@@ -141,10 +143,19 @@ DataList *newDataListNode(Data *d){
 }
 
 
-
 DataList *newDataList(){
     return (DataList *) malloc(sizeof (DataList));
 }
+
+
+DataList *newDataList(Data *data){
+    DataList *d=(DataList *) malloc(sizeof (DataList));
+    d->data=data;
+    d->next= nullptr;
+    return d;
+}
+
+
 
 
 /**
@@ -212,13 +223,11 @@ double ySpace(double y0,double y1){
 /**
  * 添加链表节点
  */
-void add(DataList *root,DataList *node){
-    if (root== nullptr){
-        root=node;
-    }
-    while (true){
+void add(DataList *root,Data *node){
+    while (root!= nullptr){
         if (root->next== nullptr){
-            root->next=node;
+            DataList *d=newDataList(node);
+            root->next=d;
             break;
         } else{
             root=root->next;
@@ -226,24 +235,25 @@ void add(DataList *root,DataList *node){
     }
 }
 
+
 /**
  * 生成返回链表
  */
-void geo(DataList *dataList,Node *node,double x,double y,int radius){
+void geo(DataList *dataList,Node *node,double x,double y,double radius){
     if (node->type==NODE){
-        if (xSpace(node->x[0],x)<1000|| xSpace(node->x[1],x)<1000){
-            if (ySpace(node->y[0],y)<1000|| ySpace(node->y[1],y)<1000){
+        if (xSpace(node->x[0],x)<=1000|| xSpace(node->x[1],x)<=1000||(x>=node->x[0]&&x<=node->x[1])){
+            if (ySpace(node->y[0],y)<=1000|| ySpace(node->y[1],y)<=1000||(y>=node->y[0]&&y<=node->y[1])){
                 int k=node->count;
                 for (int i = 0; i < k; ++i) {
-
+                    geo(dataList,node->nodeList[i],x,y,radius);
                 }
             }
         }
     } else{
         int k=node->count;
         for (int i = 0; i < k; ++i) {
-            if (getDistance(node->dataList[i], newData(x,y, nullptr))){
-
+            if (getDistance(node->dataList[i], newData(x,y, nullptr))<= radius){
+                add(dataList,node->dataList[i] );
             }
         }
     }
@@ -256,15 +266,13 @@ void geo(DataList *dataList,Node *node,double x,double y,int radius){
  * @param radius 半径
  * @return 标记点集合
  */
-DataList *geoRadius(R_Tree *root,double x,double y,int radius){
-    if (root==nullptr||root->root==nullptr){
+DataList *geoRadius(DataList *dataList,R_Tree *root,double x,double y,double radius){
+    if (root==nullptr||root->root==nullptr||dataList== nullptr){
         return nullptr;
     }
     Node *node=root->root;
-    DataList *dataList=newDataList();
-
+    geo(dataList,node,x,y,radius);
 }
-
 
 /**
  * 遍历树
@@ -305,7 +313,20 @@ void showAll(R_Tree *root){
 }
 
 
-
+/**
+ * 遍历数据链表
+ */
+void show(DataList *dataList){
+    if (dataList== nullptr){
+        printf("null");
+        return;
+    }
+    dataList=dataList->next;
+    while (dataList!= nullptr){
+        printf("x:%lf\t  y:%lf\t  地点:%s\n",dataList->data->x,dataList->data->y,dataList->data->data);
+        dataList=dataList->next;
+    }
+}
 
 
 
