@@ -21,14 +21,11 @@ int main() {
     printf("\n");
 
     DataList *dataList=newDataList();
-
     Data *d=newData(39.14050,117.20529, nullptr);
     geoRadius(dataList,s,d->x,d->y,1000);
-    dataList=dataList->next;
-    while (dataList!= nullptr){
-        printf("x:%lf\t  y:%lf\t  地点:%s\t\t距离:%lf\n",dataList->data->x,dataList->data->y,dataList->data->data, getDistance(dataList->data,d));
-        dataList=dataList->next;
-    }
+    show(dataList);
+
+
     _free(s);
     return 0;
 }

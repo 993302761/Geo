@@ -95,7 +95,7 @@ DataList *geoRadius(DataList *dataList,R_Tree *root,double x,double y,double rad
 void update_coordinate(Node *root,Data *data);
 void update_coordinate(Node *root,Node *data);
 int check_place(Node *node,double x,double y);
-
+int check_distance(Node *node,Data *data);
 
 
 R_Tree *newTree(){
@@ -330,18 +330,33 @@ void show(DataList *dataList){
 
 
 
+/**
+ * 删除节点(未完成)
+ * @param node
+ * @param d
+ */
+void delete_node(Node *node, double d){
+    int i;
+    for ( i = 0; i < M; ++i) {
+        if (node->x[i]==d){
+            for (int k = i; k < M-1; ++k) {
+                node->x[k]=node->x[k+1];
+            }
+            break;
+        }
+    }
+}
+
+
 
 /**
- * 删除数据节点
+ * 删除数据节点(未完成)
  */
-void delete_data(Node *node, Data *data, int s){
+void delete_data(Node *node, Data *data){
     int j=node->count;
     int i;
     for ( i = 0; i < j; ++i) {
-        if (node->dataList[i]==data){
-            if (s==1){
-                free(data);
-            }
+        if (node->dataList[i]->x==data->x&&node->dataList[i]->y==data->y){
             for (int k = i; k < M-1; ++k) {
                 node->dataList[k]=node->dataList[k+1];
             }
@@ -349,10 +364,53 @@ void delete_data(Node *node, Data *data, int s){
             break;
         }
     }
+    if (node->count<M/2){
+        Node *parent=node->parent;
+        int n=parent->count;
+        for (int k = 0; k < n; ++k) {
+            if (parent->nodeList[k]==node){
+                if (k-1>=0){
+                    if (parent->nodeList[k-1]->count>M/2){
+                        Node *p=parent->nodeList[k-1];
+                        int s=p->count;
 
-    assert(i<j);
+                    }
+                }
+                if (k<n-1){
+                    if (parent->nodeList[k+1]->count>M/2){
+
+                    }
+                }
+
+
+            }
+        }
+    }
 }
 
+
+/**
+ * 删除数据(未完成)
+ * @param s
+ * @param data
+ */
+void _delete(R_Tree *s,Data *data){
+    if (s== nullptr||s->root== nullptr){
+        return;
+    }
+    Node *root=s->root;
+    //找到x轴临近的叶子节点
+    while (root->type!=DATANODE){
+        int n=check_place(root,data->x,data->y);
+        if (n!=1){
+            return;
+        }  else{
+            int j=check_distance(root,data);
+            root=root->nodeList[j];
+        }
+    }
+    delete_data(root,data);
+}
 
 
 /**
@@ -374,17 +432,6 @@ void replace_node(Node *node, Node *n1, Node *n2){
 
 
 
-void delete_node(Node *node, double d){
-    int i;
-    for ( i = 0; i < M; ++i) {
-        if (node->x[i]==d){
-            for (int k = i; k < M-1; ++k) {
-                node->x[k]=node->x[k+1];
-            }
-            break;
-        }
-    }
-}
 
 
 
@@ -521,6 +568,8 @@ void update_coordinate(Node *root,Data *data){
     }
 }
 
+
+
 /**
  * 向上更新x和y的上下限
  * @param root
@@ -628,9 +677,11 @@ int check_distance(Node *node,Data *data){
 }
 
 
-
 /**
  * 插入节点
+ * @param head
+ * @param data
+ * @return
  */
 int insert(R_Tree *head,Data *data){
     Node *root;
