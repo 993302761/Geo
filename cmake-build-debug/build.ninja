@@ -88,6 +88,7 @@ build CMakeFiles/RTree.dir/main.cpp.o: CXX_COMPILER__RTree_Debug /home/lyq/CLion
 
 build RTree: CXX_EXECUTABLE_LINKER__RTree_Debug CMakeFiles/RTree.dir/main.cpp.o
   FLAGS = -g
+  LINK_LIBRARIES = -lmysqlclient
   OBJECT_DIR = CMakeFiles/RTree.dir
   POST_BUILD = :
   PRE_LINK = :
