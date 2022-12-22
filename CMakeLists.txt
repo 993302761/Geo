@@ -5,4 +5,4 @@ set(CMAKE_CXX_STANDARD 11)
 
 add_executable(RTree main.cpp)
 
-TARGET_LINK_LIBRARIES(RTree libmysqlclient.so)
+TARGET_LINK_LIBRARIES(RTree libmysqlclient.so )

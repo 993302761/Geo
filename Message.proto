@@ -1,0 +1,23 @@
+//使用proto3语法
+syntax = "proto3";
+
+package RTree;
+
+
+// 对外提供的接口
+service Message {
+
+    rpc deleteDB (pointRequest) returns (Replay) {}
+
+}
+
+
+
+message pointRequest {
+    double x=10;
+    double y=20;
+}
+
+message Replay{
+    repeated int32 data=10;
+}

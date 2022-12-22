@@ -48,7 +48,7 @@ typedef enum {
 typedef struct Data{
     double x;       //纬度
     double y;       //经度
-    char *data;
+    int data;
 }Data;
 
 
@@ -76,7 +76,7 @@ typedef struct R_Tree{
 
 R_Tree *newTree();
 Node *newNode();
-Data *newData(double x0,double y0,char *d);
+Data *newData(double x0,double y0,int d);
 DataList *newDataList(Data *data);
 DataList *newDataList();
 
@@ -129,7 +129,7 @@ Node *newNode() {
 
 
 
-Data *newData(double x0,double y0,char *d){
+Data *newData(double x0,double y0,int d){
     if (x0<0||x0>90||y0<0||y0>180){
         printf("经纬度数据错误");
         return nullptr;
@@ -152,7 +152,10 @@ DataList *newDataListNode(Data *d){
 
 
 DataList *newDataList(){
-    return (DataList *) malloc(sizeof (DataList));
+    DataList *d=(DataList *) malloc(sizeof (DataList));
+    d->next= nullptr;
+    d->data= nullptr;
+    return d;
 }
 
 
@@ -170,7 +173,7 @@ int update_data(R_Tree *root){
     MYSQL_ROW row;
 
     string query;
-    int flag, t;
+    int flag;
 
     /**
      分配或初始化与mysql_real_connect()相适应的MYSQL对象。
@@ -185,12 +188,11 @@ int update_data(R_Tree *root){
      */
     if (!mysql_real_connect(&mysql, HOST, USER, PASSWD, DB, 0, NULL, 0))
     {
-        printf ("Failed to connect to Mysql!\n");
+        printf ("与MySQL建立连接失败\n");
         return 0;
     }
     else
     {
-        printf ("Connected MySQL successfully!\n");
         query = "select parking_lot_number,latitude,longitude from Parking_lot_information";
 
         //设置编码格式utf8
@@ -202,13 +204,10 @@ int update_data(R_Tree *root){
         flag = mysql_real_query (&mysql, query.c_str(), query.length());
         if (flag)
         {
-            printf ("query failed !\n");
+            printf ("sql语句执行失败!\n");
             return 0;
         }
-        else
-        {
-            printf ("query success !\n");
-        }
+
 
         /**
          * 对于成功检索了数据的每个查询（SELECT、SHOW、DESCRIBE、EXPLAIN、CHECK TABLE等），必须调用mysql_store_result()或mysql_use_result() 。
@@ -219,7 +218,7 @@ int update_data(R_Tree *root){
         res = mysql_store_result (&mysql); // 获取结果集
         if(res== nullptr)
         {
-            printf("result null");
+            printf("结果集为空");
             return 0;
         }
 
@@ -244,11 +243,9 @@ int update_data(R_Tree *root){
             ++index;
             double x0=strtod(row[1], nullptr);
             double y0=strtod(row[2], nullptr);
-            Data *d=newData(x0, y0,row[0]);
+            int data= atoi(row[0]);
+            Data *d=newData(x0, y0,data);
             insert(root, d);
-//            for (t = 0; t < num_columns; t++)
-//                printf ("%s\t", row[t]);
-//            printf ("\n");
             row = mysql_fetch_row(res);
         }
 
@@ -359,7 +356,7 @@ void geo(DataList *dataList,Node *node,double x,double y,double radius){
     } else{
         int k=node->count;
         for (int i = 0; i < k; ++i) {
-            if (getDistance(node->dataList[i], newData(x,y, nullptr))<= radius){
+            if (getDistance(node->dataList[i], newData(x,y, 0))<= radius){
                 add(dataList,node->dataList[i] );
             }
         }
@@ -430,7 +427,7 @@ void show(DataList *dataList){
     }
     dataList=dataList->next;
     while (dataList!= nullptr){
-        printf("x:%lf\t  y:%lf\t  地点:%s\n",dataList->data->x,dataList->data->y,dataList->data->data);
+        printf("x:%lf\t  y:%lf\t  data:%d\n",dataList->data->x,dataList->data->y,dataList->data->data);
         dataList=dataList->next;
     }
 }
