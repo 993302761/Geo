@@ -1136,6 +1136,18 @@
 			],
 			"type" : "STATIC",
 			"value" : "/home/lyq/CLionProjects/RTree"
+		},
+		{
+			"name" : "protobuf_DIR",
+			"properties" : 
+			[
+				{
+					"name" : "HELPSTRING",
+					"value" : "The directory containing a CMake configuration file for protobuf."
+				}
+			],
+			"type" : "PATH",
+			"value" : "protobuf_DIR-NOTFOUND"
 		}
 	],
 	"kind" : "cache",

@@ -6,8 +6,6 @@ using namespace std;
 #include "R_Tree.h"
 
 
-class Account;
-
 int main() {
     R_Tree *s=newTree();
     update_data(s);
@@ -34,6 +32,17 @@ int main() {
     replay.SerializeToString(&serializeToStr);
     cout <<"序列化后的字节："<< serializeToStr << endl;
 
+
+    RTree::Replay account2;
+    if(!account2.ParseFromString(serializeToStr))
+    {
+        cerr << "failed to parse student." << endl;
+        return -1;
+    }
+    cout << "反序列化："<< account2.data().data() << endl;
+
+
+    google::protobuf::ShutdownProtobufLibrary();
 
     _free(s);
 

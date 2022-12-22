@@ -215,6 +215,9 @@ RTree_IS_TOP_LEVEL:STATIC=ON
 //Value Computed by CMake
 RTree_SOURCE_DIR:STATIC=/home/lyq/CLionProjects/RTree
 
+//The directory containing a CMake configuration file for protobuf.
+protobuf_DIR:PATH=protobuf_DIR-NOTFOUND
+
 
 ########################
 # INTERNAL cache entries

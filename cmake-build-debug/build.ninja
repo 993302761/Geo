@@ -78,6 +78,12 @@ build CMakeFiles/RTree.dir/main.cpp.o: CXX_COMPILER__RTree_Debug /home/lyq/CLion
   OBJECT_DIR = CMakeFiles/RTree.dir
   OBJECT_FILE_DIR = CMakeFiles/RTree.dir
 
+build CMakeFiles/RTree.dir/Message.pb.cc.o: CXX_COMPILER__RTree_Debug /home/lyq/CLionProjects/RTree/Message.pb.cc || cmake_object_order_depends_target_RTree
+  DEP_FILE = CMakeFiles/RTree.dir/Message.pb.cc.o.d
+  FLAGS = -g -std=gnu++11
+  OBJECT_DIR = CMakeFiles/RTree.dir
+  OBJECT_FILE_DIR = CMakeFiles/RTree.dir
+
 
 # =============================================================================
 # Link build statements for EXECUTABLE target RTree
@@ -86,9 +92,9 @@ build CMakeFiles/RTree.dir/main.cpp.o: CXX_COMPILER__RTree_Debug /home/lyq/CLion
 #############################################
 # Link the executable RTree
 
-build RTree: CXX_EXECUTABLE_LINKER__RTree_Debug CMakeFiles/RTree.dir/main.cpp.o
+build RTree: CXX_EXECUTABLE_LINKER__RTree_Debug CMakeFiles/RTree.dir/main.cpp.o CMakeFiles/RTree.dir/Message.pb.cc.o
   FLAGS = -g
-  LINK_LIBRARIES = -lmysqlclient
+  LINK_LIBRARIES = -lmysqlclient  -lpthread  -lprotobuf
   OBJECT_DIR = CMakeFiles/RTree.dir
   POST_BUILD = :
   PRE_LINK = :
