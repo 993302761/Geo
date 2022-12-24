@@ -27,6 +27,7 @@ int main() {
         replay.add_data(dataList->data->data);
         dataList=dataList->next;
     }
+    replay.set_issuccess(false);
 
     string serializeToStr;
     replay.SerializeToString(&serializeToStr);
@@ -39,8 +40,10 @@ int main() {
         cerr << "failed to parse student." << endl;
         return -1;
     }
-    cout << "反序列化："<< account2.data().data() << endl;
-
+    cout << "反序列化："<< account2.issuccess() << endl;
+    for (int i = 0; i < account2.data_size(); ++i) {
+        cout <<account2.data(i)<<endl;
+    }
 
     google::protobuf::ShutdownProtobufLibrary();
 

@@ -3,12 +3,14 @@ syntax = "proto3";
 
 package RTree;
 
+import "google/protobuf/empty.proto";
 
 // 对外提供的接口
 service Message {
 
-    rpc deleteDB (pointRequest) returns (Replay) {}
+    rpc geo (pointRequest) returns (Replay) {}
 
+    rpc update(google.protobuf.Empty) returns (google.protobuf.Empty);
 }
 
 message pointRequest {
@@ -17,5 +19,6 @@ message pointRequest {
 }
 
 message Replay{
+    bool isSuccess=5;
     repeated int32 data=10;
 }

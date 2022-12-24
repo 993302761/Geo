@@ -39,6 +39,7 @@ PROTOBUF_CONSTEXPR Replay::Replay(
     ::_pbi::ConstantInitialized): _impl_{
     /*decltype(_impl_.data_)*/{}
   , /*decltype(_impl_._data_cached_byte_size_)*/{0}
+  , /*decltype(_impl_.issuccess_)*/false
   , /*decltype(_impl_._cached_size_)*/{}} {}
 struct ReplayDefaultTypeInternal {
   PROTOBUF_CONSTEXPR ReplayDefaultTypeInternal()
@@ -69,6 +70,7 @@ const uint32_t TableStruct_Message_2eproto::offsets[] PROTOBUF_SECTION_VARIABLE(
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
   ~0u,  // no _inlined_string_donated_
+  PROTOBUF_FIELD_OFFSET(::RTree::Replay, _impl_.issuccess_),
   PROTOBUF_FIELD_OFFSET(::RTree::Replay, _impl_.data_),
 };
 static const ::_pbi::MigrationSchema schemas[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
@@ -82,16 +84,22 @@ static const ::_pb::Message* const file_default_instances[] = {
 };
 
 const char descriptor_table_protodef_Message_2eproto[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) =
-  "\n\rMessage.proto\022\005RTree\"$\n\014pointRequest\022\t"
-  "\n\001x\030\n \001(\001\022\t\n\001y\030\024 \001(\001\"\026\n\006Replay\022\014\n\004data\030\n"
-  " \003(\0052;\n\007Message\0220\n\010deleteDB\022\023.RTree.poin"
-  "tRequest\032\r.RTree.Replay\"\000b\006proto3"
+  "\n\rMessage.proto\022\005RTree\032\033google/protobuf/"
+  "empty.proto\"$\n\014pointRequest\022\t\n\001x\030\n \001(\001\022\t"
+  "\n\001y\030\024 \001(\001\")\n\006Replay\022\021\n\tisSuccess\030\005 \001(\010\022\014"
+  "\n\004data\030\n \003(\0052p\n\007Message\022+\n\003geo\022\023.RTree.p"
+  "ointRequest\032\r.RTree.Replay\"\000\0228\n\006update\022\026"
+  ".google.protobuf.Empty\032\026.google.protobuf"
+  ".Emptyb\006proto3"
   ;
+static const ::_pbi::DescriptorTable* const descriptor_table_Message_2eproto_deps[1] = {
+  &::descriptor_table_google_2fprotobuf_2fempty_2eproto,
+};
 static ::_pbi::once_flag descriptor_table_Message_2eproto_once;
 const ::_pbi::DescriptorTable descriptor_table_Message_2eproto = {
-    false, false, 153, descriptor_table_protodef_Message_2eproto,
+    false, false, 254, descriptor_table_protodef_Message_2eproto,
     "Message.proto",
-    &descriptor_table_Message_2eproto_once, nullptr, 0, 2,
+    &descriptor_table_Message_2eproto_once, descriptor_table_Message_2eproto_deps, 1, 2,
     schemas, file_default_instances, TableStruct_Message_2eproto::offsets,
     file_level_metadata_Message_2eproto, file_level_enum_descriptors_Message_2eproto,
     file_level_service_descriptors_Message_2eproto,
@@ -357,9 +365,11 @@ Replay::Replay(const Replay& from)
   new (&_impl_) Impl_{
       decltype(_impl_.data_){from._impl_.data_}
     , /*decltype(_impl_._data_cached_byte_size_)*/{0}
+    , decltype(_impl_.issuccess_){}
     , /*decltype(_impl_._cached_size_)*/{}};
 
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  _this->_impl_.issuccess_ = from._impl_.issuccess_;
   // @@protoc_insertion_point(copy_constructor:RTree.Replay)
 }
 
@@ -370,6 +380,7 @@ inline void Replay::SharedCtor(
   new (&_impl_) Impl_{
       decltype(_impl_.data_){arena}
     , /*decltype(_impl_._data_cached_byte_size_)*/{0}
+    , decltype(_impl_.issuccess_){false}
     , /*decltype(_impl_._cached_size_)*/{}
   };
 }
@@ -399,6 +410,7 @@ void Replay::Clear() {
   (void) cached_has_bits;
 
   _impl_.data_.Clear();
+  _impl_.issuccess_ = false;
   _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
@@ -408,6 +420,14 @@ const char* Replay::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
     uint32_t tag;
     ptr = ::_pbi::ReadTag(ptr, &tag);
     switch (tag >> 3) {
+      // bool isSuccess = 5;
+      case 5:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 40)) {
+          _impl_.issuccess_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+          CHK_(ptr);
+        } else
+          goto handle_unusual;
+        continue;
       // repeated int32 data = 10;
       case 10:
         if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 82)) {
@@ -448,6 +468,12 @@ uint8_t* Replay::_InternalSerialize(
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
+  // bool isSuccess = 5;
+  if (this->_internal_issuccess() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteBoolToArray(5, this->_internal_issuccess(), target);
+  }
+
   // repeated int32 data = 10;
   {
     int byte_size = _impl_._data_cached_byte_size_.load(std::memory_order_relaxed);
@@ -487,6 +513,11 @@ size_t Replay::ByteSizeLong() const {
     total_size += data_size;
   }
 
+  // bool isSuccess = 5;
+  if (this->_internal_issuccess() != 0) {
+    total_size += 1 + 1;
+  }
+
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 
@@ -506,6 +537,9 @@ void Replay::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBU
   (void) cached_has_bits;
 
   _this->_impl_.data_.MergeFrom(from._impl_.data_);
+  if (from._internal_issuccess() != 0) {
+    _this->_internal_set_issuccess(from._internal_issuccess());
+  }
   _this->_internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -524,6 +558,7 @@ void Replay::InternalSwap(Replay* other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   _impl_.data_.InternalSwap(&other->_impl_.data_);
+  swap(_impl_.issuccess_, other->_impl_.issuccess_);
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata Replay::GetMetadata() const {

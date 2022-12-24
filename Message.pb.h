@@ -30,6 +30,7 @@
 #include <google/protobuf/repeated_field.h>  // IWYU pragma: export
 #include <google/protobuf/extension_set.h>  // IWYU pragma: export
 #include <google/protobuf/unknown_field_set.h>
+#include <google/protobuf/empty.pb.h>
 // @@protoc_insertion_point(includes)
 #include <google/protobuf/port_def.inc>
 #define PROTOBUF_INTERNAL_EXPORT_Message_2eproto
@@ -341,6 +342,7 @@ class Replay final :
 
   enum : int {
     kDataFieldNumber = 10,
+    kIsSuccessFieldNumber = 5,
   };
   // repeated int32 data = 10;
   int data_size() const;
@@ -364,6 +366,15 @@ class Replay final :
   ::PROTOBUF_NAMESPACE_ID::RepeatedField< int32_t >*
       mutable_data();
 
+  // bool isSuccess = 5;
+  void clear_issuccess();
+  bool issuccess() const;
+  void set_issuccess(bool value);
+  private:
+  bool _internal_issuccess() const;
+  void _internal_set_issuccess(bool value);
+  public:
+
   // @@protoc_insertion_point(class_scope:RTree.Replay)
  private:
   class _Internal;
@@ -374,6 +385,7 @@ class Replay final :
   struct Impl_ {
     ::PROTOBUF_NAMESPACE_ID::RepeatedField< int32_t > data_;
     mutable std::atomic<int> _data_cached_byte_size_;
+    bool issuccess_;
     mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   };
   union { Impl_ _impl_; };
@@ -433,6 +445,26 @@ inline void pointRequest::set_y(double value) {
 // -------------------------------------------------------------------
 
 // Replay
+
+// bool isSuccess = 5;
+inline void Replay::clear_issuccess() {
+  _impl_.issuccess_ = false;
+}
+inline bool Replay::_internal_issuccess() const {
+  return _impl_.issuccess_;
+}
+inline bool Replay::issuccess() const {
+  // @@protoc_insertion_point(field_get:RTree.Replay.isSuccess)
+  return _internal_issuccess();
+}
+inline void Replay::_internal_set_issuccess(bool value) {
+  
+  _impl_.issuccess_ = value;
+}
+inline void Replay::set_issuccess(bool value) {
+  _internal_set_issuccess(value);
+  // @@protoc_insertion_point(field_set:RTree.Replay.isSuccess)
+}
 
 // repeated int32 data = 10;
 inline int Replay::_internal_data_size() const {
